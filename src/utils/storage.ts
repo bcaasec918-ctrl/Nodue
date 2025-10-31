@@ -1,8 +1,7 @@
-import { AttendanceRecord, MarksRecord, FeesRecord, User } from './mockData';
+import { AttendanceRecord, FeesRecord, User } from './mockData';
 
 const STORAGE_KEYS = {
   ATTENDANCE: 'college_attendance',
-  MARKS: 'college_marks',
   FEES: 'college_fees',
   CURRENT_USER: 'college_current_user'
 };
@@ -20,30 +19,11 @@ export const storageUtils = {
 
   addAttendanceRecord: (record: AttendanceRecord): void => {
     const existing = storageUtils.getAttendance();
-    const filtered = existing.filter(r => 
+    const filtered = existing.filter(r =>
       !(r.studentId === record.studentId && r.subject === record.subject && r.date === record.date)
     );
     filtered.push(record);
     storageUtils.saveAttendance(filtered);
-  },
-
-  // Marks operations
-  getMarks: (): MarksRecord[] => {
-    const stored = localStorage.getItem(STORAGE_KEYS.MARKS);
-    return stored ? JSON.parse(stored) : [];
-  },
-
-  saveMarks: (marks: MarksRecord[]): void => {
-    localStorage.setItem(STORAGE_KEYS.MARKS, JSON.stringify(marks));
-  },
-
-  addMarksRecord: (record: MarksRecord): void => {
-    const existing = storageUtils.getMarks();
-    const filtered = existing.filter(r => 
-      !(r.studentId === record.studentId && r.subject === record.subject && r.examType === record.examType)
-    );
-    filtered.push(record);
-    storageUtils.saveMarks(filtered);
   },
 
   // Fees operations
@@ -74,7 +54,7 @@ export const storageUtils = {
   calculateAttendancePercentage: (studentId: string, subject?: string): number => {
     const attendance = storageUtils.getAttendance();
     let studentAttendance = attendance.filter(record => record.studentId === studentId);
-    
+
     if (subject) {
       studentAttendance = studentAttendance.filter(record => record.subject === subject);
     }
@@ -90,7 +70,7 @@ export const storageUtils = {
     const attendancePercentage = storageUtils.calculateAttendancePercentage(studentId);
     const fees = storageUtils.getFees();
     const studentFees = fees.find(f => f.studentId === studentId);
-    
+
     return attendancePercentage >= 75 && (studentFees?.cleared || false);
   }
 };

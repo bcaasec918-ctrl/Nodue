@@ -1,87 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { mockStudents, mockSubjects, AttendanceRecord } from '../utils/mockData';
-import { storageUtils } from '../utils/storage';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar, CheckCircle, XCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface AttendanceManagerProps {
   userClass?: string;
   userSubject?: string;
 }
 
-const AttendanceManager: React.FC<AttendanceManagerProps> = ({ userClass, userSubject }) => {
-  const [selectedClass, setSelectedClass] = useState(userClass || '');
-  const [selectedSubject, setSelectedSubject] = useState(userSubject || '');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [attendance, setAttendance] = useState<{ [key: string]: boolean }>({});
+interface Student {
+  student_id: string;
+  student_name: string;
+  attended_classes?: number;
+  total_classes?: number;
+}
 
-  const filteredStudents = userClass
-    ? mockStudents.filter(student => student.class === userClass)
-    : mockStudents.filter(student => student.class === selectedClass);
+interface Subject {
+  subject_id: number;
+  subject_name: string;
+}
 
+interface ClassData {
+  class_id: number;
+  class_name: string;
+}
+
+const AttendanceManager: React.FC<AttendanceManagerProps> = ({
+  userClass,
+  userSubject,
+}) => {
+  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedClass, setSelectedClass] = useState(userClass || "");
+  const [selectedSubject, setSelectedSubject] = useState(userSubject || "");
+  const [attendance, setAttendance] = useState<{ [key: string]: number }>({});
+  const [totalClasses, setTotalClasses] = useState<number>(50);
+
+  // ✅ Fetch classes and subjects
   useEffect(() => {
-    if (selectedClass && selectedSubject && selectedDate) {
-      loadExistingAttendance();
-    }
-  }, [selectedClass, selectedSubject, selectedDate]);
+    const fetchData = async () => {
+      try {
+        const [classRes, subjectRes] = await Promise.all([
+          fetch("http://localhost:3001/classes"),
+          fetch("http://localhost:3001/subjects"),
+        ]);
 
-  const loadExistingAttendance = () => {
-    const existingAttendance = storageUtils.getAttendance();
-    const dayAttendance: { [key: string]: boolean } = {};
+        if (!classRes.ok || !subjectRes.ok)
+          throw new Error("Failed to load classes/subjects");
 
-    filteredStudents.forEach(student => {
-      const record = existingAttendance.find(a =>
-        a.studentId === student.id &&
-        a.subject === selectedSubject &&
-        a.date === selectedDate
-      );
-      dayAttendance[student.id] = record?.present ?? true;
-    });
+        const classData = await classRes.json();
+        const subjectData = await subjectRes.json();
 
-    setAttendance(dayAttendance);
-  };
+        setClasses(classData);
+        setSubjects(subjectData);
 
-  const toggleAttendance = (studentId: string) => {
-    setAttendance(prev => ({
+        // Auto-select IDs if props contain names
+        if (userClass && !selectedClass) {
+          const foundClass = classData.find(
+            (c: ClassData) => c.class_name === userClass
+          );
+          if (foundClass) setSelectedClass(String(foundClass.class_id));
+        }
+
+        if (userSubject && !selectedSubject) {
+          const foundSubject = subjectData.find(
+            (s: Subject) => s.subject_name === userSubject
+          );
+          if (foundSubject) setSelectedSubject(String(foundSubject.subject_id));
+        }
+      } catch (error) {
+        console.error("❌ Error loading classes/subjects:", error);
+        toast.error("Error loading classes or subjects");
+      }
+    };
+
+    fetchData();
+  }, [userClass, userSubject]);
+
+  // ✅ Fetch students of selected class
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (!selectedClass) return;
+      try {
+        const res = await fetch(
+          `http://localhost:3001/students?class=${selectedClass}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch students");
+        const data = await res.json();
+        setStudents(data);
+      } catch (error) {
+        console.error("❌ Error loading students:", error);
+        toast.error("Error loading students");
+      }
+    };
+
+    fetchStudents();
+  }, [selectedClass]);
+
+  // ✅ Load attendance for class & subject
+  useEffect(() => {
+    const loadAttendance = async () => {
+      if (!selectedClass || !selectedSubject) return;
+      try {
+        const res = await fetch(
+          `http://localhost:3001/attendance?class=${selectedClass}&subject=${selectedSubject}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch attendance");
+        const data = await res.json();
+
+        const attendanceMap: { [key: string]: number } = {};
+        data.forEach((record: Student) => {
+          attendanceMap[record.student_id] = record.attended_classes || 0;
+        });
+
+        setAttendance(attendanceMap);
+        if (data.length > 0 && data[0].total_classes)
+          setTotalClasses(data[0].total_classes);
+      } catch (error) {
+        console.error("❌ Error loading attendance:", error);
+        toast.error("Error loading attendance records");
+      }
+    };
+
+    loadAttendance();
+  }, [selectedClass, selectedSubject]);
+
+  // ✅ Update attendance
+  const updateAttendance = (studentId: string, value: number) => {
+    setAttendance((prev) => ({
       ...prev,
-      [studentId]: !prev[studentId]
+      [studentId]: Math.max(0, Math.min(totalClasses, value)),
     }));
   };
 
-  const saveAttendance = () => {
-    if (!selectedSubject || !selectedDate) {
-      toast.error('Please select subject and date');
-      return;
+  // ✅ Save attendance (fixed mapping for class_name → class_id)
+  const saveAttendance = async () => {
+    try {
+      // Step 1: Resolve classId
+      let classId: number | null = null;
+      if (isNaN(Number(selectedClass))) {
+        const cls = classes.find((c) => c.class_name === selectedClass);
+        classId = cls ? cls.class_id : null;
+      } else {
+        classId = parseInt(selectedClass);
+      }
+
+      // Step 2: Resolve subjectId
+      let subjectId: number | null = null;
+      if (isNaN(Number(selectedSubject))) {
+        const sub = subjects.find((s) => s.subject_name === selectedSubject);
+        subjectId = sub ? sub.subject_id : null;
+      } else {
+        subjectId = parseInt(selectedSubject);
+      }
+
+      if (!classId || !subjectId) {
+        toast.error("Please select valid class and subject");
+        return;
+      }
+
+      // Step 3: Save attendance
+      for (const student of students) {
+        const payload = {
+          student_id: student.student_id,
+          subject_id: subjectId,
+          class_id: classId,
+          total_classes: totalClasses,
+          attended_classes: attendance[student.student_id] ?? 0,
+        };
+
+        console.log("📦 Sending payload:", payload);
+
+        const response = await fetch("http://localhost:3001/attendance", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to save attendance");
+        }
+      }
+
+      toast.success("✅ Attendance saved successfully!");
+    } catch (error) {
+      console.error("❌ Error saving attendance:", error);
+      toast.error("Error saving attendance");
     }
-
-    filteredStudents.forEach(student => {
-      const record: AttendanceRecord = {
-        id: `ATT_${student.id}_${selectedSubject}_${selectedDate}`,
-        studentId: student.id,
-        subject: selectedSubject,
-        date: selectedDate,
-        present: attendance[student.id] ?? true
-      };
-      storageUtils.addAttendanceRecord(record);
-    });
-
-    toast.success('Attendance updated successfully!');
   };
 
   return (
     <Card className="bg-white/95 shadow-xl rounded-2xl backdrop-blur-md">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2 text-indigo-700">
-          <Calendar className="h-5 w-5" />
           <span>Attendance Management</span>
         </CardTitle>
       </CardHeader>
+
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {!userClass && (
             <div>
               <label className="text-sm font-medium text-gray-700">Class</label>
@@ -89,9 +216,11 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ userClass, userSu
                 <SelectTrigger className="border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400">
                   <SelectValue placeholder="Select class" />
                 </SelectTrigger>
-                <SelectContent>
-                  {Array.from(new Set(mockStudents.map(s => s.class))).map(cls => (
-                    <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                <SelectContent className="bg-white">
+                  {classes.map((cls) => (
+                    <SelectItem key={cls.class_id} value={String(cls.class_id)}>
+                      {cls.class_name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -100,75 +229,81 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({ userClass, userSu
 
           {!userSubject && (
             <div>
-              <label className="text-sm font-medium text-gray-700">Subject</label>
+              <label className="text-sm font-medium text-gray-700">
+                Subject
+              </label>
               <Select value={selectedSubject} onValueChange={setSelectedSubject}>
                 <SelectTrigger className="border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400">
                   <SelectValue placeholder="Select subject" />
                 </SelectTrigger>
-                <SelectContent>
-                  {mockSubjects.map(subject => (
-                    <SelectItem key={subject.id} value={subject.name}>{subject.name}</SelectItem>
+                <SelectContent className="bg-white">
+                  {subjects.map((subject) => (
+                    <SelectItem
+                      key={subject.subject_id}
+                      value={String(subject.subject_id)}
+                    >
+                      {subject.subject_name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           )}
-
-          <div>
-            <label className="text-sm font-medium text-gray-700">Date</label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
         </div>
 
         {selectedClass && selectedSubject && (
           <>
             <div className="space-y-2">
-              <h3 className="font-medium text-gray-900">Students ({filteredStudents.length})</h3>
+              <h3 className="font-medium text-gray-900">
+                Students ({students.length})
+              </h3>
               <div className="grid gap-2">
-                {filteredStudents.map(student => {
-                  const isAbove75 = attendance[student.id] ?? true;
+                {students.map((student) => {
+                  const attended = attendance[student.student_id] ?? 0;
+                  const percentage =
+                    totalClasses > 0
+                      ? Math.round((attended / totalClasses) * 100)
+                      : 0;
 
                   return (
                     <div
-                      key={student.id}
+                      key={student.student_id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <div className="font-medium">{student.name}</div>
-                          <div className="text-sm text-gray-500">
-                            Roll: {student.rollNumber} | Class: {student.class}
-                          </div>
+                      <div>
+                        <div className="font-medium">
+                          {student.student_name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          ID: {student.student_id}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={isAbove75 ? "default" : "secondary"}>
-                          {isAbove75 ? "Above 75%" : "Below 75%"}
-                        </Badge>
-                        <Button
-                          onClick={() => toggleAttendance(student.id)}
-                          variant={isAbove75 ? "default" : "outline"}
-                          size="sm"
-                          className={isAbove75 ? "bg-green-600 hover:bg-green-700 text-white" : "bg-red-100 hover:bg-red-200"}
+                      <div className="flex items-center space-x-3">
+                        <input
+                          type="number"
+                          min={0}
+                          max={totalClasses}
+                          value={attended}
+                          onChange={(e) =>
+                            updateAttendance(
+                              student.student_id,
+                              parseInt(e.target.value)
+                            )
+                          }
+                          className="w-20 px-2 py-1 border rounded-md text-center"
+                        />
+                        <Badge
+                          variant={percentage >= 75 ? "default" : "destructive"}
                         >
-                          {isAbove75 ? (
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                          ) : (
-                            <XCircle className="h-4 w-4 mr-1" />
-                          )}
-                          {isAbove75 ? 'Above 75%' : 'Below 75%'}
-                        </Button>
+                          {percentage}%
+                        </Badge>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </div>
+            
 
             <Button
               onClick={saveAttendance}

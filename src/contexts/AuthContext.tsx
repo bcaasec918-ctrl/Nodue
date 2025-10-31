@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '../utils/mockData';
+import { User } from '../utils/mockData'; // Or from types.ts
 import { storageUtils } from '../utils/storage';
 
 interface AuthContextType {
