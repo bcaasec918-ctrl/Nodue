@@ -49,7 +49,7 @@ const NoDueCertificate: React.FC<NoDueCertificateProps> = ({
   useEffect(() => {
     const fetchAllData = async () => {
       try {
-        const resNoDue = await fetch(`http://localhost:3001/nodue/${studentId}`);
+        const resNoDue = await fetch(`https://nodue-backend-kvy1.onrender.com/nodue/${studentId}`);
         if (!resNoDue.ok) throw new Error("Failed to fetch NoDue data");
         const noDueData = await resNoDue.json();
 
@@ -62,7 +62,7 @@ const NoDueCertificate: React.FC<NoDueCertificateProps> = ({
           principal: noDueData.approvals?.principal || false,
         });
 
-        const resStudent = await fetch(`http://localhost:3001/students/${studentId}`);
+        const resStudent = await fetch(`https://nodue-backend-kvy1.onrender.com/students/${studentId}`);
         if (!resStudent.ok) throw new Error("Student not found");
         const studentData = await resStudent.json();
         setStudent(studentData);
@@ -95,7 +95,7 @@ const NoDueCertificate: React.FC<NoDueCertificateProps> = ({
     }
 
     try {
-      const res = await fetch("http://localhost:3001/nodue/approve", {
+      const res = await fetch("https://nodue-backend-kvy1.onrender.com/nodue/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId, role }),
@@ -110,7 +110,7 @@ const NoDueCertificate: React.FC<NoDueCertificateProps> = ({
       alert(data.message);
 
       // 🔄 Refresh data after approval
-      const updated = await fetch(`http://localhost:3001/nodue/${studentId}`);
+      const updated = await fetch(`https://nodue-backend-kvy1.onrender.com/nodue/${studentId}`);
       const updatedData = await updated.json();
 
       setSignatures({

@@ -50,8 +50,8 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     const fetchData = async () => {
       try {
         const [classRes, subjectRes] = await Promise.all([
-          fetch("http://localhost:3001/classes"),
-          fetch("http://localhost:3001/subjects"),
+          fetch("https://nodue-backend-kvy1.onrender.com1/classes"),
+          fetch("https://nodue-backend-kvy1.onrender.com/subjects"),
         ]);
 
         if (!classRes.ok || !subjectRes.ok)
@@ -92,7 +92,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       if (!selectedClass) return;
       try {
         const res = await fetch(
-          `http://localhost:3001/students?class=${selectedClass}`
+          `https://nodue-backend-kvy1.onrender.com/students?class=${selectedClass}`
         );
         if (!res.ok) throw new Error("Failed to fetch students");
         const data = await res.json();
@@ -112,7 +112,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       if (!selectedClass || !selectedSubject) return;
       try {
         const res = await fetch(
-          `http://localhost:3001/attendance?class=${selectedClass}&subject=${selectedSubject}`
+          `https://nodue-backend-kvy1.onrender.com/attendance?class=${selectedClass}&subject=${selectedSubject}`
         );
         if (!res.ok) throw new Error("Failed to fetch attendance");
         const data = await res.json();
@@ -180,7 +180,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
 
         console.log("📦 Sending payload:", payload);
 
-        const response = await fetch("http://localhost:3001/attendance", {
+        const response = await fetch("https://nodue-backend-kvy1.onrender.com/attendance", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

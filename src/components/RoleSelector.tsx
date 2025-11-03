@@ -33,17 +33,17 @@ const RoleSelector = () => {
   const [subjects, setSubjects] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/classes")
+    fetch("https://nodue-backend-kvy1.onrender.com/classes")
       .then((res) => res.json())
       .then(setClasses)
       .catch((err) => console.error("❌ Error fetching classes:", err));
 
-    fetch("http://localhost:3001/subjects")
+    fetch("https://nodue-backend-kvy1.onrender.com/subjects")
       .then((res) => res.json())
       .then(setSubjects)
       .catch((err) => console.error("❌ Error fetching subjects:", err));
 
-    fetch("http://localhost:3001/students")
+    fetch("https://nodue-backend-kvy1.onrender.com/students")
       .then((res) => res.json())
       .then(setStudents)
       .catch((err) => console.error("❌ Error fetching students:", err));
