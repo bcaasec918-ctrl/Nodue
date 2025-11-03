@@ -45,7 +45,7 @@ const PrincipalDashboard: React.FC = () => {
         setStudentData(eligibilityMap);
 
         // 3️⃣ Fetch pending approvals (HOD done, principal pending)
-        const pendingRes = await fetch("http://localhost:3001/nodue/pending/principal");
+        const pendingRes = await fetch("https://nodue-backend-kvy1.onrender.com/nodue/pending/principal");
         if (pendingRes.ok) {
           const pending = await pendingRes.json();
           setNotifications(pending);

@@ -17,6 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Shield,
+  Users,
+  BookOpen,
+  GraduationCap,
+  UserCog,
+  School,
+} from "lucide-react"; // ✅ Added role icons
 
 const RoleSelector = () => {
   const { login } = useAuth();
@@ -169,12 +177,42 @@ const RoleSelector = () => {
                 <SelectValue placeholder="Choose your role" />
               </SelectTrigger>
               <SelectContent className="bg-white">
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="class_teacher">Class Teacher</SelectItem>
-                <SelectItem value="subject_teacher">Subject Teacher</SelectItem>
-                <SelectItem value="hod">Head of Department</SelectItem>
-                <SelectItem value="principal">Principal</SelectItem>
-                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="admin">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-indigo-600" />
+                    Admin
+                  </div>
+                </SelectItem>
+                <SelectItem value="class_teacher">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-indigo-600" />
+                    Class Teacher
+                  </div>
+                </SelectItem>
+                <SelectItem value="subject_teacher">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-indigo-600" />
+                    Subject Teacher
+                  </div>
+                </SelectItem>
+                <SelectItem value="hod">
+                  <div className="flex items-center gap-2">
+                    <UserCog className="w-4 h-4 text-indigo-600" />
+                    Head of Department
+                  </div>
+                </SelectItem>
+                <SelectItem value="principal">
+                  <div className="flex items-center gap-2">
+                    <School className="w-4 h-4 text-indigo-600" />
+                    Principal
+                  </div>
+                </SelectItem>
+                <SelectItem value="student">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-indigo-600" />
+                    Student
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
