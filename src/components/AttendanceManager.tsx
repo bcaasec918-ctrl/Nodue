@@ -50,7 +50,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     const fetchData = async () => {
       try {
         const [classRes, subjectRes] = await Promise.all([
-          fetch("https://nodue-backend-kvy1.onrender.com1/classes"),
+          fetch("https://nodue-backend-kvy1.onrender.com/classes"),
           fetch("https://nodue-backend-kvy1.onrender.com/subjects"),
         ]);
 
