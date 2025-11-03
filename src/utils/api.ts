@@ -31,11 +31,11 @@ export const api = {
     const allSubjects = classes.flatMap((cls: any) => cls.subjects || []);
     const uniqueSubjects = Array.from(new Set(allSubjects));
     return uniqueSubjects.map((name, i) => {
-      const subjectName = String(name); // Ensure it's a string
+      const subjectName = String(name);
       return {
         id: i + 1,
         name: subjectName,
-        code: subjectName.slice(0, 3).toUpperCase()
+        code: subjectName.slice(0, 3).toUpperCase(),
       };
     });
   },
@@ -59,5 +59,17 @@ export const api = {
     const res = await fetch(`${BASE_URL}/nodue/${studentId}`);
     if (!res.ok) throw new Error('Failed to fetch No Due status');
     return await res.json();
-  }
+  },
+
+  // 🧾 Update fee clearance (Admin privilege)
+  updateFeeStatus: async (studentId: string, classId: number, cleared: boolean) => {
+  const res = await fetch(`${BASE_URL}/api/nodue/fee/${studentId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cleared, class_id: classId }),
+  });
+  if (!res.ok) throw new Error('Failed to update fee status');
+  return await res.json();
+},
+
 };

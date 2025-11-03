@@ -30,7 +30,7 @@ export interface FeesRecord {
 export interface User {
   id: string;
   name: string;
-  role: 'class_teacher' | 'subject_teacher' | 'student' | 'hod' | 'principal';
+  role: 'class_teacher' | 'subject_teacher' | 'student' | 'hod' | 'principal' |'admin';
   assignedClass?: string;
   assignedSubject?: string;
   studentId?: string;

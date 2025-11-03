@@ -4,13 +4,14 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => ({
-  plugins: [
-    // viteSourceLocator({ prefix: "mgx" }), // Commented out
-    react(),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  server: {
+    port: 5173, // ✅ your frontend port
+    allowedHosts: [".ngrok-free.dev"], // ✅ allow all ngrok tunnels (safe for dev)
   },
 }));

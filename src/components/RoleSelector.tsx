@@ -2,10 +2,21 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCheck, BookOpen, GraduationCap, ShieldCheck, UserCog } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const RoleSelector = () => {
   const { login } = useAuth();
@@ -42,6 +53,15 @@ const RoleSelector = () => {
     let user;
 
     switch (selectedRole) {
+      case "admin":
+        user = {
+          id: "ADMIN_01",
+          name: username || "Admin",
+          role: "admin",
+        };
+        navigate("/dashboard");
+        break;
+
       case "class_teacher":
         user = {
           id: `CT_${selectedClass}`,
@@ -49,7 +69,7 @@ const RoleSelector = () => {
           role: "class_teacher",
           assignedClass: selectedClass,
         };
-        navigate("/class-teacher");
+        navigate("/dashboard");
         break;
 
       case "subject_teacher":
@@ -59,7 +79,7 @@ const RoleSelector = () => {
           role: "subject_teacher",
           assignedSubject: selectedSubject,
         };
-        navigate("/subject-teacher");
+        navigate("/dashboard");
         break;
 
       case "hod":
@@ -68,7 +88,7 @@ const RoleSelector = () => {
           name: username || "Head of Department",
           role: "hod",
         };
-        navigate("/hod");
+        navigate("/dashboard");
         break;
 
       case "principal":
@@ -77,7 +97,7 @@ const RoleSelector = () => {
           name: username || "Principal",
           role: "principal",
         };
-        navigate("/principal");
+        navigate("/dashboard");
         break;
 
       case "student":
@@ -90,7 +110,7 @@ const RoleSelector = () => {
           classId: student?.class_id,
           className: student?.class_name,
         };
-        navigate("/student");
+        navigate("/dashboard");
         break;
 
       default:
@@ -148,7 +168,8 @@ const RoleSelector = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Choose your role" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
+                <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="class_teacher">Class Teacher</SelectItem>
                 <SelectItem value="subject_teacher">Subject Teacher</SelectItem>
                 <SelectItem value="hod">Head of Department</SelectItem>
@@ -165,7 +186,7 @@ const RoleSelector = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Choose your class" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {classes.map((cls) => (
                     <SelectItem key={cls.class_id} value={cls.class_name}>
                       {cls.class_name}
@@ -183,7 +204,7 @@ const RoleSelector = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Choose your subject" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {subjects.map((subject) => (
                     <SelectItem key={subject.subject_id} value={subject.subject_name}>
                       {subject.subject_name}
@@ -201,7 +222,7 @@ const RoleSelector = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Choose your profile" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {students.map((student) => (
                     <SelectItem key={student.student_id} value={student.student_id}>
                       {student.student_name} — {student.class_name}

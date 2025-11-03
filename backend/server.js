@@ -28,6 +28,7 @@ app.use("/teachers", teachersRoutes);
 app.use("/classes", classRoutes);
 app.use("/subjects", subjectsRoutes);
 app.use("/fees", feesRouter);
+app.use("/api/nodue", nodueRoutes);
 
 
 const PORT = process.env.PORT || 3001;

@@ -15,9 +15,9 @@ import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import ClassTeacherDashboard from "./pages/ClassTeacherDashboard";
 import SubjectTeacherDashboard from "./pages/SubjectTeacherDashboard";
-import StudentDashboard from "./pages/StudentDashboard";
 import HODDashboard from "./pages/HODDashboard";
 import PrincipalDashboard from "./pages/PrincipalDashboard";
+import AdminDashboard from "./pages/AdminDashboard"; // ✅ NEW
 
 const queryClient = new QueryClient();
 
@@ -50,12 +50,13 @@ const DashboardRouter = () => {
   if (!currentUser) return <Navigate to="/" />;
 
   switch (currentUser.role) {
+    case "admin":
+      return <AdminDashboard />; // ✅ NEW
     case "class_teacher":
       return <ClassTeacherDashboard />;
     case "subject_teacher":
       return <SubjectTeacherDashboard />;
-    case "student":
-      return <StudentDashboard />;
+    
     case "hod":
       return <HODDashboard />;
     case "principal":
