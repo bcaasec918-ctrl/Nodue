@@ -115,7 +115,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  /** ✅ Admin toggle to mark/unmark fee clearance (includes class_id) */
+  /** ✅ Admin toggle to mark/unmark fee clearance */
   const toggleFeeClearance = async (
     studentId: string,
     currentStatus: boolean,
@@ -141,19 +141,24 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Welcome, {currentUser?.name}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Admin Dashboard
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-base">
+            Welcome, {currentUser?.name}
+          </p>
         </div>
       </div>
 
-      {/* 📊 Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6 flex items-center space-x-3">
-            <Users className="h-8 w-8 text-blue-600" />
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="shadow-sm hover:shadow-md transition">
+          <CardContent className="p-5 flex items-center space-x-3">
+            <Users className="h-8 w-8 text-blue-600 shrink-0" />
             <div>
               <p className="text-sm text-gray-600">Total Students</p>
               <p className="text-2xl font-bold text-gray-900">
@@ -163,9 +168,9 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center space-x-3">
-            <TrendingUp className="h-8 w-8 text-green-600" />
+        <Card className="shadow-sm hover:shadow-md transition">
+          <CardContent className="p-5 flex items-center space-x-3">
+            <TrendingUp className="h-8 w-8 text-green-600 shrink-0" />
             <div>
               <p className="text-sm text-gray-600">Average Attendance</p>
               <p className="text-2xl font-bold text-gray-900">
@@ -175,9 +180,9 @@ const AdminDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6 flex items-center space-x-3">
-            <Award className="h-8 w-8 text-purple-600" />
+        <Card className="shadow-sm hover:shadow-md transition">
+          <CardContent className="p-5 flex items-center space-x-3">
+            <Award className="h-8 w-8 text-purple-600 shrink-0" />
             <div>
               <p className="text-sm text-gray-600">No Due Eligible</p>
               <p className="text-2xl font-bold text-gray-900">
@@ -188,20 +193,20 @@ const AdminDashboard: React.FC = () => {
         </Card>
       </div>
 
-      {/* 🧭 Tabs Section */}
+      {/* Tabs Section */}
       <Tabs defaultValue="students" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid grid-cols-3 sm:flex sm:justify-start sm:gap-4 overflow-x-auto rounded-lg bg-gray-100 p-1">
           <TabsTrigger value="classes">Classes</TabsTrigger>
           <TabsTrigger value="teachers">Teachers</TabsTrigger>
           <TabsTrigger value="students">Students</TabsTrigger>
         </TabsList>
 
-        {/* 👨‍🎓 Students Tab */}
+        {/* Students Tab */}
         <TabsContent value="students">
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-gray-800">
+                <Users className="h-5 w-5 text-blue-600" />
                 <span>All Students</span>
               </CardTitle>
             </CardHeader>
@@ -217,48 +222,47 @@ const AdminDashboard: React.FC = () => {
                 return (
                   <div
                     key={student.student_id}
-                    className={`p-4 border rounded-lg space-y-2 transition ${
+                    className={`p-4 border rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition ${
                       data.eligible
                         ? "bg-green-50 border-green-200"
                         : "bg-white border-gray-200"
                     }`}
                   >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {student.student_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          ID: {student.student_id} | Class: {student.class_name}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant={
-                            data.attendance >= 75 ? "default" : "destructive"
-                          }
-                        >
-                          {data.attendance}% Attendance
-                        </Badge>
-                        {data.eligible && (
-                          <Badge variant="default" className="bg-green-600">
-                            No Due Eligible
-                          </Badge>
-                        )}
-                        <Badge
-                          className={`${
-                            data.feesCleared
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {data.feesCleared ? "Fees Cleared" : "Pending Fees"}
-                        </Badge>
-                      </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {student.student_name}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ID: {student.student_id} | Class: {student.class_name}
+                      </p>
                     </div>
 
-                    {/* ✅ Toggle Fee Clearance */}
-                    <div className="text-right mt-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant={
+                          data.attendance >= 75 ? "default" : "destructive"
+                        }
+                      >
+                        {data.attendance}% Attendance
+                      </Badge>
+                      {data.eligible && (
+                        <Badge variant="default" className="bg-green-600">
+                          No Due Eligible
+                        </Badge>
+                      )}
+                      <Badge
+                        className={`${
+                          data.feesCleared
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {data.feesCleared ? "Fees Cleared" : "Pending Fees"}
+                      </Badge>
+                    </div>
+
+                    {/* Fee Toggle */}
+                    <div className="text-right sm:text-left">
                       <Button
                         variant={data.feesCleared ? "destructive" : "default"}
                         size="sm"
@@ -266,19 +270,19 @@ const AdminDashboard: React.FC = () => {
                           toggleFeeClearance(
                             student.student_id,
                             data.feesCleared,
-                            student.class_id // ✅ Added class_id
+                            student.class_id
                           )
                         }
                       >
                         {data.feesCleared ? (
                           <>
                             <XCircle className="mr-2 h-4 w-4" />
-                            Unmark Fees Cleared
+                            Unmark
                           </>
                         ) : (
                           <>
                             <CheckCircle className="mr-2 h-4 w-4" />
-                            Mark Fees Cleared
+                            Mark Cleared
                           </>
                         )}
                       </Button>
@@ -290,16 +294,16 @@ const AdminDashboard: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* 🏫 Classes Tab */}
+        {/* Classes Tab */}
         <TabsContent value="classes">
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <BookOpen className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-gray-800">
+                <BookOpen className="h-5 w-5 text-indigo-600" />
                 <span>Class Overview</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {classes.map((cls) => {
                 const studentCount = students.filter(
                   (s) => s.class_id === cls.class_id
@@ -307,13 +311,15 @@ const AdminDashboard: React.FC = () => {
                 return (
                   <div
                     key={cls.class_id}
-                    className="p-4 border rounded-lg flex justify-between"
+                    className="p-4 border rounded-xl flex justify-between items-center bg-white shadow-sm"
                   >
                     <div>
                       <p className="font-medium text-gray-900">
                         {cls.class_name}
                       </p>
-                      <p className="text-sm text-gray-500">ID: {cls.class_id}</p>
+                      <p className="text-sm text-gray-500">
+                        ID: {cls.class_id}
+                      </p>
                     </div>
                     <Badge variant="default">{studentCount} Students</Badge>
                   </div>
@@ -323,20 +329,20 @@ const AdminDashboard: React.FC = () => {
           </Card>
         </TabsContent>
 
-        {/* 👩‍🏫 Teachers Tab */}
+        {/* Teachers Tab */}
         <TabsContent value="teachers">
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <UserCog className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-gray-800">
+                <UserCog className="h-5 w-5 text-amber-600" />
                 <span>Teacher Assignments</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {teachers.map((teacher) => (
                 <div
                   key={teacher.teacher_id}
-                  className="p-4 border rounded-lg flex justify-between"
+                  className="p-4 border rounded-xl flex justify-between items-center bg-white shadow-sm"
                 >
                   <div>
                     <p className="font-medium text-gray-900">{teacher.name}</p>

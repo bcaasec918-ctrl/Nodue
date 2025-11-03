@@ -16,7 +16,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Users, TrendingUp, Award, Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 const ClassTeacherDashboard: React.FC = () => {
   const { currentUser } = useAuth();
@@ -50,9 +52,6 @@ const ClassTeacherDashboard: React.FC = () => {
           ? allStudents
           : allStudents?.data || [];
 
-        console.log("✅ All students from DB:", studentsArray);
-        console.log("👩‍🏫 Assigned class:", currentUser.assignedClass);
-
         const classMap: Record<string, number> = {
           "BCA 1st Year": 3,
           "BCA 2nd Year": 2,
@@ -65,7 +64,6 @@ const ClassTeacherDashboard: React.FC = () => {
           (student) => student.class_id === assignedClassId
         );
 
-        console.log("🎯 Filtered students:", filtered);
         setClassStudents(filtered);
         setFilteredStudents(filtered);
         fetchStudentStats(filtered);
@@ -111,11 +109,7 @@ const ClassTeacherDashboard: React.FC = () => {
               attendance: attendancePercent,
               eligible: isEligible,
             };
-          } catch (err) {
-            console.error(
-              `⚠️ Error fetching data for student ${student.student_id}:`,
-              err
-            );
+          } catch {
             return { id: student.student_id, attendance: 0, eligible: false };
           }
         })
@@ -140,18 +134,15 @@ const ClassTeacherDashboard: React.FC = () => {
             : 0,
         eligibleForNoDue: eligibleCount,
       });
-
-      console.log("📊 Student data summary:", data);
     } catch (err) {
       console.error("❌ Error calculating stats:", err);
     }
   };
 
-  // ✅ Search + Filter + Sort logic
+  // ✅ Search + Filter
   useEffect(() => {
     let updated = [...classStudents];
 
-    // 🔍 Search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       updated = updated.filter(
@@ -161,188 +152,187 @@ const ClassTeacherDashboard: React.FC = () => {
       );
     }
 
-    // 🧩 Sorting by eligibility
     if (sortFilter === "eligible") {
-      updated.sort((a, b) => {
-        const aEligible = studentData[a.student_id]?.eligible ? -1 : 1;
-        const bEligible = studentData[b.student_id]?.eligible ? -1 : 1;
-        return aEligible - bEligible;
-      });
+      updated = updated.filter((s) => studentData[s.student_id]?.eligible);
     } else if (sortFilter === "notEligible") {
-      updated.sort((a, b) => {
-        const aEligible = studentData[a.student_id]?.eligible ? 1 : -1;
-        const bEligible = studentData[b.student_id]?.eligible ? 1 : -1;
-        return aEligible - bEligible;
-      });
+      updated = updated.filter((s) => !studentData[s.student_id]?.eligible);
     }
 
     setFilteredStudents(updated);
   }, [searchTerm, classStudents, sortFilter, studentData]);
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-900">
             Class Teacher Dashboard
           </h1>
-          <p className="text-gray-600">
-            Managing Class: {currentUser?.assignedClass}
+          <p className="text-slate-600 mt-1 text-sm sm:text-base">
+            Managing Class: <strong>{currentUser?.assignedClass}</strong>
           </p>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Students
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.totalStudents}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <TrendingUp className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Average Attendance
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.averageAttendance}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-3">
-              <Award className="h-8 w-8 text-purple-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  No Due Eligible
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {stats.eligibleForNoDue}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        {[
+          {
+            icon: Users,
+            label: "Total Students",
+            value: stats.totalStudents,
+            color: "text-indigo-600",
+          },
+          {
+            icon: TrendingUp,
+            label: "Average Attendance",
+            value: `${stats.averageAttendance}%`,
+            color: "text-emerald-600",
+          },
+          {
+            icon: Award,
+            label: "No Due Eligible",
+            value: stats.eligibleForNoDue,
+            color: "text-purple-600",
+          },
+        ].map((item, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className="bg-white hover:shadow-lg transition-shadow duration-300 rounded-2xl border border-slate-200">
+              <CardContent className="p-4 sm:p-6 flex items-center gap-4">
+                <item.icon className={`h-8 w-8 sm:h-10 sm:w-10 ${item.color}`} />
+                <div>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    {item.label}
+                  </p>
+                  <p className="text-2xl sm:text-3xl font-semibold text-slate-900">
+                    {item.value}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Tabs */}
+      {/* Tabs Section */}
       <Tabs defaultValue="students" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="students">Students Overview</TabsTrigger>
-          <TabsTrigger value="attendance">Attendance</TabsTrigger>
+        <TabsList className="w-full flex flex-wrap justify-center gap-2 bg-white border border-slate-200 rounded-xl p-1">
+          <TabsTrigger
+            value="students"
+            className="flex-1 sm:flex-none text-sm sm:text-base data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg"
+          >
+            Students Overview
+          </TabsTrigger>
+          <TabsTrigger
+            value="attendance"
+            className="flex-1 sm:flex-none text-sm sm:text-base data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg"
+          >
+            Attendance Manager
+          </TabsTrigger>
         </TabsList>
 
         {/* Students Overview */}
         <TabsContent value="students" className="space-y-6">
-          <Card>
+          <Card className="shadow-sm rounded-2xl border border-slate-200 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Users className="h-5 w-5" />
-                <span>Class {currentUser?.assignedClass} Students</span>
+              <CardTitle className="flex items-center gap-2 text-slate-800 text-lg sm:text-xl">
+                <Users className="h-5 w-5 text-indigo-600" />
+                Class Students
               </CardTitle>
             </CardHeader>
 
             <CardContent>
-              {/* Search Bar */}
+              {/* Search */}
               <div className="relative mb-6">
-                <Search className="absolute left-3 top-3 text-gray-400 h-5 w-5" />
+                <Search className="absolute left-3 top-3 text-slate-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Search by student name or ID..."
+                  placeholder="Search student name or ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-300 text-sm sm:text-base focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 />
               </div>
 
-              {/* Eligibility Filter Badges */}
-              <div className="flex items-center gap-3 mb-4">
-                <Badge
+              {/* Filter buttons */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5">
+                <Button
                   onClick={() => setSortFilter("eligible")}
-                  className={`cursor-pointer px-3 py-1 text-sm font-medium ${
+                  variant={sortFilter === "eligible" ? "default" : "outline"}
+                  className={`flex-1 sm:flex-none ${
                     sortFilter === "eligible"
-                      ? "bg-green-600 text-white"
-                      : "bg-green-100 text-green-700 hover:bg-green-200"
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : ""
                   }`}
                 >
                   ✅ Eligible
-                </Badge>
-
-                <Badge
+                </Button>
+                <Button
                   onClick={() => setSortFilter("notEligible")}
-                  className={`cursor-pointer px-3 py-1 text-sm font-medium ${
+                  variant={sortFilter === "notEligible" ? "default" : "outline"}
+                  className={`flex-1 sm:flex-none ${
                     sortFilter === "notEligible"
-                      ? "bg-red-600 text-white"
-                      : "bg-red-100 text-red-700 hover:bg-red-200"
+                      ? "bg-rose-600 hover:bg-rose-700"
+                      : ""
                   }`}
                 >
                   ❌ Not Eligible
-                </Badge>
-
-                <Badge
+                </Button>
+                <Button
                   onClick={() => setSortFilter("all")}
-                  className={`cursor-pointer px-3 py-1 text-sm font-medium ${
+                  variant={sortFilter === "all" ? "default" : "outline"}
+                  className={`flex-1 sm:flex-none ${
                     sortFilter === "all"
-                      ? "bg-blue-600 text-white"
-                      : "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                      ? "bg-indigo-600 hover:bg-indigo-700"
+                      : ""
                   }`}
                 >
                   🔄 Show All
-                </Badge>
+                </Button>
               </div>
 
-              {/* Student List */}
+              {/* Student Cards */}
               {filteredStudents.length === 0 ? (
-                <p className="text-gray-500">No students found.</p>
+                <p className="text-slate-500 text-center py-6">
+                  No students found.
+                </p>
               ) : (
-                <div className="grid gap-4">
-                  {filteredStudents.map((student) => {
+                <div className="grid gap-3 sm:gap-4">
+                  {filteredStudents.map((student, i) => {
                     const data =
                       studentData[student.student_id] || {
                         attendance: 0,
                         eligible: false,
                       };
-
                     return (
-                      <div
+                      <motion.div
                         key={student.student_id}
-                        className={`p-4 border rounded-lg space-y-4 transition ${
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className={`p-4 sm:p-5 border rounded-xl transition-all shadow-sm hover:shadow-md ${
                           data.eligible
-                            ? "bg-green-50 border-green-200"
-                            : "bg-white border-gray-200"
+                            ? "bg-emerald-50 border-emerald-200"
+                            : "bg-white border-slate-200"
                         }`}
                       >
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div>
-                            <div className="font-medium text-gray-900">
+                            <p className="font-semibold text-slate-800 text-sm sm:text-base">
                               {student.student_name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              ID: {student.student_id} | Class ID:{" "}
-                              {student.class_id}
-                            </div>
+                            </p>
+                            <p className="text-xs sm:text-sm text-slate-500">
+                              ID: {student.student_id}
+                            </p>
                           </div>
 
-                          <div className="flex items-center space-x-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             <Badge
                               variant={
                                 data.attendance >= 75
@@ -352,26 +342,24 @@ const ClassTeacherDashboard: React.FC = () => {
                             >
                               {data.attendance}% Attendance
                             </Badge>
-                            {data.eligible ? (
-                              <Badge
-                                variant="default"
-                                className="bg-green-600"
-                              >
-                                No Due Eligible
-                              </Badge>
-                            ) : (
-                              <Badge
-                                variant="secondary"
-                                className="bg-red-100 text-red-700"
-                              >
-                                Not Eligible
-                              </Badge>
-                            )}
+                            <Badge
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                data.eligible
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-rose-100 text-rose-700"
+                              }`}
+                            >
+                              {data.eligible
+                                ? "No Due Eligible"
+                                : "Not Eligible"}
+                            </Badge>
                           </div>
                         </div>
 
-                        <div className="text-right">
-                          <button
+                        <div className="text-right mt-3">
+                          <Button
+                            variant="link"
+                            size="sm"
                             onClick={() =>
                               setVisibleCertificate((prev) =>
                                 prev === student.student_id
@@ -379,22 +367,20 @@ const ClassTeacherDashboard: React.FC = () => {
                                   : student.student_id
                               )
                             }
-                            className="text-indigo-600 text-sm font-medium hover:underline"
+                            className="text-indigo-600 hover:text-indigo-700 text-sm"
                           >
                             {visibleCertificate === student.student_id
                               ? "Hide Certificate"
                               : "View No Due Certificate"}
-                          </button>
+                          </Button>
                         </div>
 
                         {visibleCertificate === student.student_id && (
                           <div className="mt-4">
-                            <NoDueCertificate
-                              studentId={student.student_id}
-                            />
+                            <NoDueCertificate studentId={student.student_id} />
                           </div>
                         )}
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>

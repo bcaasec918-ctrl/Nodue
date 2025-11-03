@@ -63,7 +63,6 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         setClasses(classData);
         setSubjects(subjectData);
 
-        // Auto-select IDs if props contain names
         if (userClass && !selectedClass) {
           const foundClass = classData.find(
             (c: ClassData) => c.class_name === userClass
@@ -86,7 +85,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     fetchData();
   }, [userClass, userSubject]);
 
-  // ✅ Fetch students of selected class
+  // ✅ Fetch students
   useEffect(() => {
     const fetchStudents = async () => {
       if (!selectedClass) return;
@@ -106,7 +105,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     fetchStudents();
   }, [selectedClass]);
 
-  // ✅ Load attendance for class & subject
+  // ✅ Load attendance
   useEffect(() => {
     const loadAttendance = async () => {
       if (!selectedClass || !selectedSubject) return;
@@ -142,10 +141,9 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
     }));
   };
 
-  // ✅ Save attendance (fixed mapping for class_name → class_id)
+  // ✅ Save attendance (with reliable total_classes)
   const saveAttendance = async () => {
     try {
-      // Step 1: Resolve classId
       let classId: number | null = null;
       if (isNaN(Number(selectedClass))) {
         const cls = classes.find((c) => c.class_name === selectedClass);
@@ -154,7 +152,6 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         classId = parseInt(selectedClass);
       }
 
-      // Step 2: Resolve subjectId
       let subjectId: number | null = null;
       if (isNaN(Number(selectedSubject))) {
         const sub = subjects.find((s) => s.subject_name === selectedSubject);
@@ -168,23 +165,31 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
         return;
       }
 
-      // Step 3: Save attendance
+      const currentTotalClasses = Number(totalClasses);
+      if (!currentTotalClasses || currentTotalClasses <= 0) {
+        toast.error("Please enter valid total classes");
+        return;
+      }
+
       for (const student of students) {
         const payload = {
           student_id: student.student_id,
           subject_id: subjectId,
           class_id: classId,
-          total_classes: totalClasses,
+          total_classes: currentTotalClasses, // ✅ always up-to-date
           attended_classes: attendance[student.student_id] ?? 0,
         };
 
         console.log("📦 Sending payload:", payload);
 
-        const response = await fetch("https://nodue-backend-kvy1.onrender.com/attendance", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        const response = await fetch(
+          "https://nodue-backend-kvy1.onrender.com/attendance",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
 
         if (!response.ok) {
           const data = await response.json();
@@ -208,6 +213,7 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Class & Subject Select */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {!userClass && (
             <div>
@@ -251,6 +257,25 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
           )}
         </div>
 
+        {/* ✅ Total Classes Input */}
+        {selectedClass && selectedSubject && (
+          <div className="flex items-center space-x-3">
+            <label className="text-sm font-medium text-gray-700">
+              Total Classes Taken:
+            </label>
+            <input
+              type="number"
+              min={1}
+              value={totalClasses}
+              onChange={(e) =>
+                setTotalClasses(parseInt(e.target.value) || 0)
+              }
+              className="w-24 px-2 py-1 border rounded-md text-center"
+            />
+          </div>
+        )}
+
+        {/* Students List */}
         {selectedClass && selectedSubject && (
           <>
             <div className="space-y-2">
@@ -303,7 +328,6 @@ const AttendanceManager: React.FC<AttendanceManagerProps> = ({
                 })}
               </div>
             </div>
-            
 
             <Button
               onClick={saveAttendance}

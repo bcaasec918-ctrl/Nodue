@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-8 w-8" />
-            <span className="text-xl font-bold">College Management System</span>
+            <span className="text-xl font-bold">No Due Certificate Generator</span>
           </div>
 
           {/* Desktop Menu */}
