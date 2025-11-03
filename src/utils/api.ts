@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3001'; // Update if deploying to a live server
+const BASE_URL = 'https://nodue-backend-kvy1.onrender.com'; // Update if deploying to a live server
 
 export const api = {
   // 🧑‍🎓 Get all students
