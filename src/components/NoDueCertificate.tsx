@@ -211,37 +211,37 @@ const NoDueCertificate: React.FC<NoDueCertificateProps> = ({
             </div>
           </div>
 
-          {/* Attendance Table */}
-          <div className="mt-8">
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">
-              Attendance Summary
-            </h3>
-            <table className="min-w-full border border-gray-300 text-sm text-left">
-              <thead className="bg-indigo-50 text-indigo-700">
-                <tr>
-                  <th className="px-3 py-2 border">Subject</th>
-                  <th className="px-3 py-2 border">Attended</th>
-                  <th className="px-3 py-2 border">Total</th>
-                  <th className="px-3 py-2 border">%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attendance.map((a, i) => {
-                  const percent = a.total_classes
-                    ? ((a.attended_classes / a.total_classes) * 100).toFixed(2)
-                    : "0.00";
-                  return (
-                    <tr key={i} className="even:bg-gray-50">
-                      <td className="px-3 py-2 border">{a.subject_name}</td>
-                      <td className="px-3 py-2 border">{a.attended_classes}</td>
-                      <td className="px-3 py-2 border">{a.total_classes}</td>
-                      <td className="px-3 py-2 border">{percent}%</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+         {/* Attendance Table */}
+<div className="mt-8">
+  <h3 className="text-sm font-semibold text-gray-700 mb-2">
+    Attendance Summary
+  </h3>
+  <table className="min-w-full border border-gray-300 text-sm text-left">
+    <thead className="bg-indigo-50 text-indigo-700">
+      <tr>
+        <th className="px-3 py-2 border">Subject</th>
+        <th className="px-3 py-2 border">No. Classes Held</th>
+        <th className="px-3 py-2 border">No.Attended</th>
+        <th className="px-3 py-2 border">%</th>
+      </tr>
+    </thead>
+    <tbody>
+      {attendance.map((a, i) => {
+        const percent = a.total_classes
+          ? ((a.attended_classes / a.total_classes) * 100).toFixed(2)
+          : "0.00";
+        return (
+          <tr key={i} className="even:bg-gray-50">
+            <td className="px-3 py-2 border">{a.subject_name}</td>
+            <td className="px-3 py-2 border">{a.total_classes}</td>
+            <td className="px-3 py-2 border">{a.attended_classes}</td>
+            <td className="px-3 py-2 border">{percent}%</td>
+          </tr>
+        );
+      })}
+    </tbody>
+  </table>
+</div>
 
           {/* Signatures */}
           <div className="mt-10 grid grid-cols-3 gap-6 text-center text-sm text-gray-700">
